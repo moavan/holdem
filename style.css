@@ -1,0 +1,139 @@
+/* Light Theme for Holdem Tracker */
+:root{
+  --bg:#f7f9fc;
+  --panel:#ffffff;
+  --panel-border:#e6ebf2;
+  --text:#1b2b41;
+  --muted:#6b7a90;
+  --brand:#3a6ff8;
+  --brand-dark:#2e57c8;
+  --table-head:#eef4ff;
+  --table-row:#ffffff;
+  --input-bg:#ffffff;
+  --input-border:#d6dbe6;
+  --success:#0f9960;
+  --danger:#d64545;
+  --badge-bg:#eaf0ff;
+  --badge-border:#cfdcff;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Apple SD Gothic Neo,Helvetica,Arial,sans-serif;
+  margin:0;background:var(--bg);color:var(--text);
+}
+
+/* Topbar */
+.topbar{
+  position:sticky;top:0;z-index:5;
+  background:var(--panel);
+  border-bottom:1px solid var(--panel-border);
+  padding:12px 16px;display:flex;align-items:center;gap:16px
+}
+.topbar h1{font-size:18px;margin:0;color:var(--text)}
+.nav button{
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--panel-border);
+  border-radius:10px;padding:8px 10px;margin-right:6px;cursor:pointer;
+  transition:all .15s ease
+}
+.nav button:hover{border-color:#cdd6ea;background:#f6f8fd}
+.nav button.active{background:var(--brand);color:#fff;border-color:var(--brand-dark)}
+
+/* Layout */
+#app{padding:16px;max-width:1100px;margin:0 auto}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:16px;padding:14px;
+  box-shadow:0 2px 6px rgba(18, 28, 45, 0.04);
+}
+.card-title{font-size:13px;color:#4c5a70;margin-bottom:6px}
+.metric{font-size:24px;font-weight:700}
+.sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Tables */
+.table{width:100%;border-collapse:collapse;margin-top:8px;background:var(--panel);border:1px solid var(--panel-border);border-radius:10px;overflow:hidden}
+.table th,.table td{border-bottom:1px solid var(--panel-border);padding:10px 12px;text-align:left;font-size:14px}
+.table th{background:var(--table-head);color:#2a3b55}
+.table tr:nth-child(even) td{background:#fbfdff}
+
+/* Forms */
+.form{max-width:780px}
+.row{margin:10px 0;display:block}
+.row.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:13px;color:#3a4b65;margin-bottom:4px}
+input,select,textarea,button{
+  width:100%;padding:10px;border-radius:10px;border:1px solid var(--input-border);
+  background:var(--input-bg);color:var(--text)
+}
+input:focus,select:focus,textarea:focus{outline:3px solid rgba(58,111,248,.15);border-color:var(--brand)}
+button{cursor:pointer;background:var(--brand);border-color:var(--brand-dark);color:#fff}
+button:hover{background:var(--brand-dark)}
+button.danger{background:#f3d3d3;border-color:#ebb1b1;color:#8b1e1e}
+button.danger:hover{background:#eebaba}
+
+/* Helpers */
+.tip{background:#f4f8ff;border:1px dashed #cfe0ff;border-radius:10px;padding:10px;color:#3a4b65;margin-top:8px}
+.tip.small{font-size:12px}
+.mt{margin-top:16px}
+.tab{display:none}
+.tab.active{display:block}
+
+/* Footer */
+.footer{
+  padding:20px;color:#6b7a90;text-align:center;
+  border-top:1px solid var(--panel-border);
+  background:var(--panel);margin-top:30px
+}
+
+/* Badges & PnL */
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--badge-border);background:var(--badge-bg);color:#2e57c8;font-size:12px}
+.negative{color:var(--danger);font-weight:600}
+.positive{color:var(--success);font-weight:600}
+
+
+/* Charts */
+.charts{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:8px
+}
+.chart-card{
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:16px;padding:12px;
+  box-shadow:0 2px 6px rgba(18,28,45,.04);
+}
+.chart-card canvas{width:100%;height:220px;display:block}
+
+/* Header accessibility toggle */
+.a11y{margin-left:auto}
+#a11y-label{font-size:12px;color:var(--muted)}
+#a11y-toggle{margin-left:8px}
+#btn-a11y{padding:8px 10px;border-radius:10px;border:1px solid var(--panel-border);background:#fff;color:var(--text)}
+
+/* High-contrast + large text mode */
+body.hc{
+  --bg:#ffffff;
+  --panel:#ffffff;
+  --panel-border:#c8cfe0;
+  --text:#000000;
+  --muted:#2a2a2a;
+  --brand:#000000;
+  --brand-dark:#000000;
+  --table-head:#f0f4ff;
+  --input-border:#a9b3cc;
+  font-size:18px;
+}
+body.hc .nav button.active{background:#000;color:#fff;border-color:#000}
+body.hc .badge{background:#000;color:#fff;border-color:#000}
+body.hc .table th{color:#000}
+body.hc button{font-weight:700}
+
+/* Players table ellipsis */
+#players-table td{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

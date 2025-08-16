@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holdem Tracker — 시드/세션 기록 앱 (오프라인)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Holdem Tracker</h1>
+    <nav class="nav">
+      <button data-tab="dashboard" class="active">대시보드</button>
+      <button data-tab="new-session">새 세션</button>
+      <button data-tab="sessions">세션 목록</button>
+      <button data-tab="hands">핸드 기록</button>
+      <button data-tab="review">복기/분석</button>
+      <button data-tab="players">플레이어</button><button data-tab="settings">설정/백업</button>
+    </nav>
+    <div class="a11y">
+      <button id="btn-a11y">가독성 모드: 끔</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <section id="dashboard" class="tab active">
+      <div class="cards">
+        <div class="card">
+          <div class="card-title">총 자산(시드)</div>
+          <div class="metric" id="metric-bankroll">₩0</div>
+          <div class="sub">계정 합계 기준</div>
+        </div>
+        <div class="card">
+          <div class="card-title">누적 손익</div>
+          <div class="metric" id="metric-profit">₩0</div>
+          <div class="sub">모든 세션 합계</div>
+        </div>
+        <div class="card">
+          <div class="card-title">세션 수 / 승률</div>
+          <div class="metric"><span id="metric-sessions">0</span> / <span id="metric-winrate">0%</span></div>
+          <div class="sub">승리 세션 비율</div>
+        </div>
+        <div class="card">
+          <div class="card-title">시간당 수익</div>
+          <div class="metric" id="metric-hourly">₩0/시간</div>
+          <div class="sub">손익 ÷ 총 시간</div>
+        </div>
+      </div>
+      <h2 class="mt">최근 세션 5개</h2>
+      
+      <h2 class="mt">라인차트</h2>
+      <div class="charts">
+        <div class="chart-card">
+          <div class="card-title">월별 손익</div>
+          <canvas id="ch-month-pnl" width="520" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="card-title">월별 시간당 수익</div>
+          <canvas id="ch-month-hourly" width="520" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="card-title">최근 30세션 손익</div>
+          <canvas id="ch-last30-pnl" width="520" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="card-title">최근 30세션 시간당</div>
+          <canvas id="ch-last30-hourly" width="520" height="220"></canvas>
+        </div>
+      </div>
+
+      <table class="table" id="recent-sessions">
+        <thead><tr><th>날짜</th><th>장소</th><th>게임</th><th>블라인드</th><th>바이인</th><th>캐시아웃</th><th>손익</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="new-session" class="tab">
+      <h2>새 세션 기록</h2>
+      <form id="new-session-form" class="form">
+        <div class="row">
+          <label>날짜</label>
+          <input type="date" name="date" required />
+        </div>
+        <div class="row">
+          <label>장소</label>
+          <input type="text" name="location" placeholder="예: 인천 ○○홀덤펍" />
+        </div>
+        <div class="row">
+          <label>게임 유형</label>
+          <select name="gameType">
+            <option value="cash">캐시</option>
+            <option value="tournament">토너먼트</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>블라인드 / 바이인 규칙</label>
+          <input type="text" name="blinds" placeholder="예: 1/2, 2/5, 100k cap" />
+        </div>
+        <div class="row">
+          <label>바이인(₩)</label>
+          <input type="number" name="buyIn" min="0" step="1000" value="0" />
+        </div>
+        <div class="row">
+          <label>캐시아웃(₩)</label>
+          <input type="number" name="cashOut" min="0" step="1000" value="0" />
+        </div>
+        <div class="row">
+          <label>플레이 시간(시간)</label>
+          <input type="number" name="hours" min="0" step="0.5" value="0" />
+        </div>
+        <div class="row">
+          <label>메모</label>
+          <textarea name="notes" rows="3" placeholder="핵심 상황/상대 스타일 등"></textarea>
+        </div>
+        <div class="row">
+          <button type="submit">저장</button>
+          <button type="button" id="btn-sample">샘플 데이터 채우기</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="sessions" class="tab">
+      <h2>세션 목록</h2>
+      <table class="table" id="sessions-table">
+        <thead><tr><th>날짜</th><th>장소</th><th>유형</th><th>블라인드</th><th>바이인</th><th>캐시아웃</th><th>손익</th><th>시간</th><th>메모</th><th>액션</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="hands" class="tab">
+      <h2>핸드 기록(간단)</h2>
+      <form id="new-hand-form" class="form">
+        <div class="row">
+          <label>세션</label>
+          <select name="sessionId" id="hand-session"></select>
+        </div>
+        <div class="row">
+          <label>상대 플레이어(선택/신규 입력)</label>
+          <input name="oppName" id="oppName" list="players-list" placeholder="닉네임 입력 또는 선택" />
+          <datalist id="players-list"></datalist>
+        </div>
+        <div class="row two">
+          <div>
+            <label>내 카드</label>
+            <input type="text" name="hole" placeholder="예: AsKs 또는 Ah Kd" />
+          </div>
+          <div>
+            <label>포지션</label>
+            <input type="text" name="pos" placeholder="UTG/MP/CO/BTN/SB/BB" />
+          </div>
+        </div>
+        <div class="row">
+          <label>핵심 액션 요약</label>
+          <input type="text" name="line" placeholder="예: 3bet pot, flop cbet, turn jam..." />
+        </div>
+        <div class="row two">
+          <div>
+            <label>팟(₩)</label>
+            <input type="number" name="pot" step="1000" value="0" />
+          </div>
+          <div>
+            <label>결과(₩)</label>
+            <input type="number" name="result" step="1000" value="0" />
+          </div>
+        </div>
+        <div class="row">
+          <label>태그/리크</label>
+          <input type="text" name="tags" placeholder="예: overplay TPTK, bluff too wide" />
+        </div>
+        <div class="row">
+          <label>메모</label>
+          <textarea name="notes" rows="3"></textarea>
+        </div>
+        <div class="row">
+          <button type="submit">핸드 저장</button>
+        </div>
+      </form>
+
+      <table class="table mt" id="hands-table">
+        <thead><tr><th>날짜</th><th>세션</th><th>카드</th><th>포지션</th><th>라인</th><th>팟</th><th>결과</th><th>태그</th><th>메모</th><th>액션</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="review" class="tab">
+      <h2>복기/분석</h2>
+      <div class="review-box">
+        <div><strong>상위 리크(태그 기준):</strong> <span id="top-leaks">-</span></div>
+        <div><strong>세션별 성과(최근 10개):</strong> <span id="trend">-</span></div>
+        <div class="tip">
+          팁: 태그에 같은 표현을 반복 입력하면(예: "overplay TPTK") 자동 집계되어 나옵니다.
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="tab">
+      <h2>설정/백업</h2>
+      <div class="row two">
+        <div class="card">
+          <div class="card-title">계정(시드) 관리</div>
+          <form id="account-form" class="form">
+            <div class="row">
+              <label>계정명</label>
+              <input name="name" placeholder="예: 현금지갑, 포커룸A" />
+            </div>
+            <div class="row">
+              <label>초기 잔액(₩)</label>
+              <input name="balance" type="number" step="1000" value="0" />
+            </div>
+            <div class="row">
+              <label>유형</label>
+              <select name="type">
+                <option value="cash">현금</option>
+                <option value="site">사이트</option>
+                <option value="bank">계좌</option>
+              </select>
+            </div>
+            <div class="row">
+              <button type="submit">계정 추가</button>
+            </div>
+          </form>
+          <table class="table" id="accounts-table">
+            <thead><tr><th>계정</th><th>유형</th><th>잔액</th><th>액션</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">백업/복원</div>
+          <div class="row">
+            <button id="btn-export">JSON 내보내기</button>
+          </div>
+          <div class="row">
+            <input type="file" id="file-import" accept="application/json" />
+            <button id="btn-import">JSON 불러오기</button>
+          </div>
+          <div class="row">
+            <button id="btn-reset" class="danger">모든 데이터 초기화</button>
+          </div>
+          <div class="tip small">오프라인 앱입니다. 데이터는 브라우저(로컬)에 저장됩니다.</div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">리스크 관리(알림)</div>
+        <form id="risk-form" class="form">
+          <div class="row two">
+            <div>
+              <label>세션 손절 한도(₩)</label>
+              <input type="number" name="stopLoss" step="1000" value="0" />
+            </div>
+            <div>
+              <label>일일 손절 한도(₩)</label>
+              <input type="number" name="dailyLoss" step="1000" value="0" />
+            </div>
+          </div>
+          <div class="row">
+            <button type="submit">리스크 설정 저장</button>
+          </div>
+          <div class="tip small">세션/일일 손실이 한도를 넘으면 대시보드에 경고가 표시됩니다.</div>
+        </form>
+      </div>
+    </section>
+
+    <section id="players" class="tab">
+      <h2>플레이어(핸디) 메모 & 검색</h2>
+      <form id="player-form" class="form">
+        <div class="row two">
+          <div>
+            <label>닉네임</label>
+            <input name="name" placeholder="예: 철수, BTN광">
+          </div>
+          <div>
+            <label>장소/사이트</label>
+            <input name="site" placeholder="예: 인천 ○○펍, A사이트">
+          </div>
+        </div>
+        <div class="row two">
+          <div>
+            <label>스타일/태그(쉼표 구분)</label>
+            <input name="tags" placeholder="예: loose-passive, 3bet tight">
+          </div>
+          <div>
+            <label>대표 색상(선택)</label>
+            <input name="color" type="color" value="#3a6ff8">
+          </div>
+        </div>
+        <div class="row">
+          <label>특징 메모</label>
+          <textarea name="notes" rows="3" placeholder="프리플랍/플랍 성향, 과거 라인, 리딩 포인트 등"></textarea>
+        </div>
+        <div class="row">
+          <button type="submit">플레이어 저장</button>
+        </div>
+      </form>
+
+      <div class="row two">
+        <div>
+          <label>검색</label>
+          <input id="player-search" placeholder="닉네임/태그/메모로 검색">
+        </div>
+      </div>
+
+      <table class="table" id="players-table">
+        <thead>
+          <tr><th>닉네임</th><th>장소/사이트</th><th>태그</th><th>메모</th><th>최근 기록</th><th>연결 핸드 수</th><th>액션</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <small>© 2025 Holdem Tracker — 오프라인 개인 기록 도구</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
